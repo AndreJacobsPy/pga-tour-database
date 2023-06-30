@@ -1,0 +1,8 @@
+# ignore data files
+data/
+__pycache__
+image/
+
+# ignore files that contain secret info
+hidden.py
+requirements.txt
