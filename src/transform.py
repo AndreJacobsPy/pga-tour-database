@@ -50,6 +50,12 @@ def get_tid() -> int:
     return tid
 
 
+def get_rid(tid: int, rd: int) -> int:
+    db = pgsql.create_engine(URL)
+    rid = db.execute(f"select round_id from rounds where tournament_id = '{tid} and round = '{rd}'")
+
+    return rid.fetchone()[0]
+
 def transformations(data: pd.DataFrame):
     "Function to perform all transformation in."
     df = data.copy()
@@ -76,10 +82,14 @@ def add_id_fields(data: pd.DataFrame) -> pd.DataFrame:
     # finding what round is by looking through columns
     r = re.compile('r\d+')
     round_: str = list(filter(r.match, df.columns))[0]
+    rd = round_[1:] if len(round_[1:]) < 4 else 5
+
+    tid = get_tid()
+    rid = get_rid(tid, rd)
 
     df['player_id'] = df['name'].apply(get_player_id)
-    df['tournament_id'] = get_tid()
-    df['round_id'] = round_[1:] if len(round_[1:]) < 4 else 5
+    df['tournament_id'] = tid
+    df['round_id'] = rid
 
     return df
 
