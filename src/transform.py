@@ -66,6 +66,17 @@ def transformations(data: pd.DataFrame):
         df[col] = df[col].apply(transform_to_float).astype(pd.Float32Dtype())
 
     df['name'] = df['player name'].apply(transform_name)
+
+    return df
+
+
+def add_id_fields(data: pd.DataFrame) -> pd.DataFrame:
+    df = data.copy()
+
+    # finding what round is by looking through columns
+    r = re.compile('r\d+')
+    round_: str = list(filter(r.match, df.columns))[0]
+
     df['player_id'] = df['name'].apply(get_player_id)
     df['tournament_id'] = get_tid()
     df['round_id'] = round_[1:] if len(round_[1:]) < 4 else 5

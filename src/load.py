@@ -1,7 +1,7 @@
 import sqlalchemy as pgsql
 import pandas as pd
 import os, re
-from transform import transformations, sg_formatting
+from transform import transformations, sg_formatting, add_id_fields
 from hidden import URL
 from sqlalchemy.exc import IntegrityError
 
@@ -57,6 +57,7 @@ def main() -> None:
         rounds(int(round_))
         players(df)
 
+        df = add_id_fields(df)
         df = sg_formatting(df)
         strokes_gained(df)
         

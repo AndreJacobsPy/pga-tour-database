@@ -7,10 +7,10 @@ from typing import List
 from os import mkdir
 from os.path import isdir
 
-URL = "https://datagolf.com/historical-tournament-stats?event_id=34&year=2023"
+URL = "https://datagolf.com/historical-tournament-stats?event_id=26"
 XPATH_HEAD = "/html/body/div[2]/div[2]/div[10]/div/div[2]"
 FIRST = 0
-LAST = 154
+LAST = 155
 
 def open_website(url) -> Chrome:
     driver = Chrome()
