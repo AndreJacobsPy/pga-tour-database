@@ -35,11 +35,13 @@ def rounds(rd_num: int) -> None:
 
         try:
             db.execute(insert)
+            db.commit()
+            
             print('Successful insert')
         except IntegrityError:
             print('Insert failed')
 
-        db.commit()
+        
 
 
 def strokes_gained(data: pd.DataFrame) -> None:
