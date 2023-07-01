@@ -12,35 +12,48 @@ URL_CONN = URL
 def players(data: pd.DataFrame) -> None:
     db = pgsql.create_engine(URL)
 
-    query = "select name from players"
-    player_in = [i[0] for i in db.execute(query).fetchall()]
+    with db.connect() as db:
 
-    df = data.query(f'name not in {player_in}')
-    df['name'].to_sql('players', db, if_exists='append', index=False)
+        query = pgsql.text("select name from players")
+        player_in = [i[0] for i in list(db.execute(query))]
 
-    print(f'{df["name"].size} rows inserted')
+        df = data.query(f'name not in {player_in}')
+        df['name'].to_sql('players', db, if_exists='append', index=False)
+
+        print(f'{df["name"].size} rows inserted')
+
+        db.commit()
 
 
 def rounds(rd_num: int) -> None:
     db = pgsql.create_engine(URL)
-    tid = db.execute('select max(tournament_id) from tournaments').fetchone()[0]
-    insert = f'insert into rounds (tournament_id, round) values ({tid}, {rd_num})'
+    with db.connect() as db:
+        query = pgsql.text('select max(tournament_id) from tournaments')
+        tid = list(db.execute(query))[0][0]
 
-    try:
-        db.execute(insert)
-        print('Successful insert')
-    except IntegrityError:
-        print('Insert failed')
+        insert = pgsql.text(f'insert into rounds (tournament_id, round) values ({tid}, {rd_num})')
+
+        try:
+            db.execute(insert)
+            print('Successful insert')
+        except IntegrityError:
+            print('Insert failed')
+
+        db.commit()
 
 
 def strokes_gained(data: pd.DataFrame) -> None:
-    db = pgsql.create_engine(URL)
+    with pgsql.create_engine(URL).connect() as db:
 
-    try:
-        data.to_sql('strokesgained', db, index=False, if_exists='append')
-        print(f'successfully inserted {data.shape[0]} rows')
-    except IntegrityError:
-        print('Insert failed')
+        try:
+            data.to_sql('strokesgained', db, index=False, if_exists='append')
+            db.commit()
+            
+            print(f'successfully inserted {data.shape[0]} rows')
+        except IntegrityError:
+            print('Insert failed')
+
+            
 
 
 def main() -> None:
