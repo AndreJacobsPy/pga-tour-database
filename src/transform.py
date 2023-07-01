@@ -41,20 +41,28 @@ def transform_name(x: str) -> str:
 
 def get_player_id(x: str) -> int:
     db = pgsql.create_engine(URL)
-    pid = db.execute(f"select player_id from players where name = '{x}'").fetchone()[0]
-    return pid
+    with db.connect() as db:
+        query = pgsql.text(f"select player_id from players where name = '{x}'")
+        pid = list(db.execute())[0][0]
+        
+        return pid
 
 def get_tid() -> int:
     db = pgsql.create_engine(URL)
-    tid = db.execute('select max(tournament_id) from tournaments').fetchone()[0]
-    return tid
+    with db.connect() as db:
+        query = pgsql.text('select max(tournament_id) from tournaments')
+        tid = list(db.execute())[0][0]
+        
+        return tid
 
 
 def get_rid(tid: int, rd: int) -> int:
     db = pgsql.create_engine(URL)
-    rid = db.execute(f"select round_id from rounds where tournament_id = '{tid} and round = '{rd}'")
+    with db.connect() as db:
+        query = pgsql.text(f"select round_id from rounds where tournament_id = '{tid} and round = '{rd}'")
+        rid = list(db.execute(query))[0][0]
 
-    return rid.fetchone()[0]
+        return rid
 
 def transformations(data: pd.DataFrame):
     "Function to perform all transformation in."
