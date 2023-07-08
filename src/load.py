@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 PATH = '/Users/andrejacobs/Desktop/pga-tour-database/data/'
 URL_CONN = URL
+TOURNAMENT_ID = 3
 
 
 def players(data: pd.DataFrame) -> None:
@@ -17,7 +18,8 @@ def players(data: pd.DataFrame) -> None:
         query = pgsql.text("select name from players")
         player_in = [i[0] for i in list(db.execute(query))]
 
-        df = data.query(f'name not in {player_in}')
+        data['name'] = data['name'].apply(lambda x: str(x).replace("'", "''"))
+        df = data.query(f"name not in {player_in}")
         df['name'].to_sql('players', db, if_exists='append', index=False)
 
         print(f'{df["name"].size} rows inserted')
@@ -25,11 +27,9 @@ def players(data: pd.DataFrame) -> None:
         db.commit()
 
 
-def rounds(rd_num: int) -> None:
+def rounds(tid: int, rd_num: int) -> None:
     db = pgsql.create_engine(URL)
     with db.connect() as db:
-        query = pgsql.text('select max(tournament_id) from tournaments')
-        tid = list(db.execute(query))[0][0]
 
         insert = pgsql.text(f'insert into rounds (tournament_id, round) values ({tid}, {rd_num})')
 
@@ -69,10 +69,12 @@ def main() -> None:
             round_ = 5
             
         df = transformations(data)
-        rounds(int(round_))
+        rounds(TOURNAMENT_ID, int(round_))
         players(df)
 
-        df = add_id_fields(df)
+        print(df.head())
+
+        df = add_id_fields(df, TOURNAMENT_ID)
         df = sg_formatting(df)
         strokes_gained(df)
         

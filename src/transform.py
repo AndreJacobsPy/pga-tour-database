@@ -42,8 +42,11 @@ def transform_name(x: str) -> str:
 def get_player_id(x: str) -> int:
     db = pgsql.create_engine(URL)
     with db.connect() as db:
-        query = pgsql.text(f"select player_id from players where name = '{x}'")
-        pid = list(db.execute())[0][0]
+        if '\'' in x:
+            x = x.replace('\'', '\'\'')
+
+        query = pgsql.text(f"select player_id from players where name = '{x.title()}'")
+        pid = list(db.execute(query))[0][0]
         
         return pid
 
@@ -51,7 +54,7 @@ def get_tid() -> int:
     db = pgsql.create_engine(URL)
     with db.connect() as db:
         query = pgsql.text('select max(tournament_id) from tournaments')
-        tid = list(db.execute())[0][0]
+        tid = list(db.execute(query))[0][0]
         
         return tid
 
@@ -59,7 +62,7 @@ def get_tid() -> int:
 def get_rid(tid: int, rd: int) -> int:
     db = pgsql.create_engine(URL)
     with db.connect() as db:
-        query = pgsql.text(f"select round_id from rounds where tournament_id = '{tid} and round = '{rd}'")
+        query = pgsql.text(f"select round_id from rounds where tournament_id = {tid} and round = {rd}")
         rid = list(db.execute(query))[0][0]
 
         return rid
@@ -84,7 +87,7 @@ def transformations(data: pd.DataFrame):
     return df
 
 
-def add_id_fields(data: pd.DataFrame) -> pd.DataFrame:
+def add_id_fields(data: pd.DataFrame, tid: int) -> pd.DataFrame:
     df = data.copy()
 
     # finding what round is by looking through columns
@@ -92,7 +95,6 @@ def add_id_fields(data: pd.DataFrame) -> pd.DataFrame:
     round_: str = list(filter(r.match, df.columns))[0]
     rd = round_[1:] if len(round_[1:]) < 4 else 5
 
-    tid = get_tid()
     rid = get_rid(tid, rd)
 
     df['player_id'] = df['name'].apply(get_player_id)
@@ -119,4 +121,4 @@ if __name__ == '__main__':
     
     new_df = transformations(df)
     print(new_df.sample(10))
-    print(sg_formatting(new_df))
+    get_player_id("Sean O'Hair")

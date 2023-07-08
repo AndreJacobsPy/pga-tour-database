@@ -7,7 +7,7 @@ from typing import List
 from os import mkdir
 from os.path import isdir
 
-URL = "https://datagolf.com/historical-tournament-stats?event_id=26"
+URL = "https://datagolf.com/historical-tournament-stats?event_id=524"
 XPATH_HEAD = "/html/body/div[2]/div[2]/div[10]/div/div[2]"
 FIRST = 0
 LAST = 155
